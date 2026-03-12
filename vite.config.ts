@@ -6,17 +6,17 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      '/graphql': {
-        target: 'http://localhost:4000',
-        changeOrigin: true,
+    plugins: [react()],
+    resolve: {
+      alias: { '@': path.resolve(__dirname, './src') },
+    },
+    server: {
+      port: 5173,
+      proxy: {
+        '/graphql': {
+          target: process.env.VITE_PROXY_TARGET || 'http://localhost:4000',
+          changeOrigin: true,
+        },
       },
     },
-  },
 });

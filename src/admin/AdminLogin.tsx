@@ -7,11 +7,13 @@ export function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const graphqlUrl = import.meta.env.VITE_GRAPHQL_URI || '/graphql';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('/graphql', {
+      const res = await fetch(graphqlUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,7 +1,12 @@
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client/core';
 import { Link } from 'react-router-dom';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import { ProductCard } from '../components/ProductCard';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 const FEATURED_PRODUCTS = gql`
   query FeaturedProducts {
@@ -71,20 +76,36 @@ export function HomePage() {
     <div>
       {heroSlides.length > 0 ? (
         <section className="relative overflow-hidden">
-          <div className="aspect-[21/9] min-h-[200px] bg-gradient-to-r from-primary-light to-primary flex items-center justify-center">
-            {heroSlides[0]?.imageUrl ? (
-              <img
-                src={heroSlides[0].imageUrl}
-                alt={heroSlides[0].title || 'Magic Sky'}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-center text-white px-4">
-                <h1 className="text-3xl md:text-5xl font-bold">Magic Sky</h1>
-                <p className="text-xl mt-2 opacity-90">{heroSlides[0]?.subtitle || 'Belleza y maquillaje'}</p>
-              </div>
-            )}
-          </div>
+          <Swiper
+            modules={[Autoplay, Pagination, Navigation]}
+            spaceBetween={0}
+            centeredSlides
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            navigation
+            className="aspect-[21/9] min-h-[200px] w-full"
+          >
+            {heroSlides.map((slide: { id: string; title?: string; subtitle?: string; imageUrl?: string; linkUrl?: string }) => (
+              <SwiperSlide key={slide.id}>
+                <div className="w-full h-full bg-gradient-to-r from-primary-light to-primary flex items-center justify-center">
+                  {slide.imageUrl ? (
+                    <Link to={slide.linkUrl || '/catalogo'} className="block w-full h-full">
+                      <img
+                        src={slide.imageUrl}
+                        alt={slide.title || 'Magic Sky'}
+                        className="w-full h-full object-cover"
+                      />
+                    </Link>
+                  ) : (
+                    <Link to={slide.linkUrl || '/catalogo'} className="text-center text-white px-4 block">
+                      <h1 className="text-3xl md:text-5xl font-bold">{slide.title || 'Magic Sky'}</h1>
+                      <p className="text-xl mt-2 opacity-90">{slide.subtitle || 'Belleza y maquillaje'}</p>
+                    </Link>
+                  )}
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </section>
       ) : (
         <section

@@ -10,10 +10,15 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AccountPage } from './pages/AccountPage';
 import { CmsPage } from './pages/CmsPage';
+import { ContactPage } from './pages/ContactPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminLayout } from './admin/AdminLayout';
 import { AdminDashboard } from './admin/AdminDashboard';
 import { AdminLogin } from './admin/AdminLogin';
+import { AdminProductos } from './admin/AdminProductos';
+import { AdminProductoForm } from './admin/AdminProductoForm';
+import { AdminPedidos } from './admin/AdminPedidos';
+import { AdminCms } from './admin/AdminCms';
 
 export default function App() {
   return (
@@ -35,12 +40,17 @@ export default function App() {
         <Route path="tratamiento-de-datos" element={<CmsPage slug="tratamiento-de-datos" />} />
         <Route path="mayoristas" element={<CmsPage slug="mayoristas" />} />
         <Route path="punto-de-venta" element={<CmsPage slug="punto-de-venta" />} />
-        <Route path="contacto" element={<CmsPage slug="contacto" />} />
+        <Route path="contacto" element={<ContactPage />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="login" element={<AdminLogin />} />
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="productos" element={<AdminProductos />} />
+        <Route path="productos/nuevo" element={<AdminProductoForm />} />
+        <Route path="productos/:id/editar" element={<AdminProductoForm />} />
+        <Route path="pedidos" element={<AdminPedidos />} />
+        <Route path="cms" element={<AdminCms />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

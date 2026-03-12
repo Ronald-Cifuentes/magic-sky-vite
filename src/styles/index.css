@@ -24,3 +24,21 @@ body {
 .dark body {
   @apply bg-gray-950 text-gray-100;
 }
+
+/* Hero slider (Swiper) - Magic Sky theme */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.6);
+  opacity: 1;
+}
+.swiper-pagination-bullet-active {
+  background: #fff;
+  transform: scale(1.2);
+}
+.swiper-button-next,
+.swiper-button-prev {
+  color: #fff;
+}
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 1.5rem;
+}

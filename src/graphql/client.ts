@@ -11,8 +11,11 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
   return forward(operation);
 });
 
+// En Docker, usar URL directa (el navegador está en el host). Localmente, usar proxy /graphql.
+const graphqlUri = import.meta.env.VITE_GRAPHQL_URI || '/graphql';
+
 const httpLink = createHttpLink({
-  uri: '/graphql',
+  uri: graphqlUri,
   credentials: 'include',
 });
 
