@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FiEdit2, FiExternalLink, FiTrash2 } from 'react-icons/fi';
 import { adminFetch } from './adminApi';
 
 const ADMIN_PRODUCTS = `
@@ -102,27 +103,30 @@ export function AdminProductos() {
                   ${((p.variants?.[0]?.price ?? 0) / 100).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <Link
                       to={`/admin/productos/${p.id}/editar`}
-                      className="text-primary hover:underline text-sm"
+                      title="Editar"
+                      className="text-primary hover:text-primary-hover p-1.5 rounded hover:bg-primary/10 transition-colors"
                     >
-                      Editar
+                      <FiEdit2 size={18} />
                     </Link>
                     <Link
                       to={`/producto/${p.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-500 hover:underline text-sm"
+                      title="Ver tienda"
+                      className="text-gray-500 hover:text-gray-700 p-1.5 rounded hover:bg-gray-100 transition-colors"
                     >
-                      Ver tienda
+                      <FiExternalLink size={18} />
                     </Link>
                     <button
                       type="button"
                       onClick={() => handleDelete(p)}
-                      className="text-red-600 hover:underline text-sm"
+                      title="Eliminar"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"
                     >
-                      Eliminar
+                      <FiTrash2 size={18} />
                     </button>
                   </div>
                 </td>

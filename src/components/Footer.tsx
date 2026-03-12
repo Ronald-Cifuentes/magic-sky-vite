@@ -1,21 +1,25 @@
 import { Link } from 'react-router-dom';
 
 const infoLinks = [
-  { to: '/nosotros', label: 'Nosotros' },
-  { to: '/preguntas-frecuentes', label: 'Preguntas frecuentes' },
-  { to: '/politicas', label: 'Nuestras políticas' },
-  { to: '/tratamiento-de-datos', label: 'Tratamiento de datos' },
-  { to: '/catalogo', label: 'Catálogos' },
+  { to: '/nosotros', label: 'Nosotros', cmsRoute: true },
+  { to: '/preguntas-frecuentes', label: 'Preguntas frecuentes', cmsRoute: true },
+  { to: '/politicas', label: 'Nuestras políticas', cmsRoute: true },
+  { to: '/tratamiento-de-datos', label: 'Tratamiento de datos', cmsRoute: true },
+  { to: '/catalogo', label: 'Catálogos', cmsRoute: true },
 ];
 
 const helpLinks = [
-  { to: '/cuenta', label: 'Mi cuenta' },
-  { to: '/mayoristas', label: 'Mayoristas' },
-  { to: '/punto-de-venta', label: 'Punto de venta' },
-  { to: '/contacto', label: 'Contacto' },
+  { to: '/cuenta', label: 'Mi cuenta', cmsRoute: false },
+  { to: '/mayoristas', label: 'Mayoristas', cmsRoute: true },
+  { to: '/punto-de-venta', label: 'Punto de venta', cmsRoute: true },
+  { to: '/contacto', label: 'Contacto', cmsRoute: true },
 ];
 
-export function Footer() {
+interface FooterProps {
+  publishedRoutes: Set<string>;
+}
+
+export function Footer({ publishedRoutes }: FooterProps) {
   return (
     <footer
       className="mt-auto text-white py-12 px-4"
@@ -47,25 +51,29 @@ export function Footer() {
         <div>
           <h3 className="font-extrabold text-lg mb-4">♡ Información</h3>
           <ul className="space-y-2">
-            {infoLinks.map((link) => (
-              <li key={link.to}>
-                <Link to={link.to} className="text-white font-semibold hover:underline">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {infoLinks
+              .filter((link) => !link.cmsRoute || publishedRoutes.has(link.to))
+              .map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-white font-semibold hover:underline">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
           </ul>
         </div>
         <div>
           <h3 className="font-extrabold text-lg mb-4">📝 Ayuda</h3>
           <ul className="space-y-2">
-            {helpLinks.map((link) => (
-              <li key={link.to}>
-                <Link to={link.to} className="text-white font-semibold hover:underline">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {helpLinks
+              .filter((link) => !link.cmsRoute || publishedRoutes.has(link.to))
+              .map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-white font-semibold hover:underline">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
           </ul>
         </div>
       </div>
