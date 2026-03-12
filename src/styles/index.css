@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #f04793;
+  --color-secondary: #7c2859;
+  --color-bg-soft: #ffe8f1;
+  --color-border-soft: #ffd7e7;
+}
+
+.dark {
+  --color-primary: #ff7bb6;
+  --color-secondary: #e8a0c4;
+  --color-bg-soft: #1a0a10;
+  --color-border-soft: #3d1a2a;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+  font-family: 'Montserrat', system-ui, sans-serif;
+}
+
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
