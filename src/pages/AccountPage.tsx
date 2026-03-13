@@ -1,8 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+const CUSTOMER_TOKEN_KEY = 'customerToken';
 
 export function AccountPage() {
   const { t } = useTranslation();
+
+  if (!localStorage.getItem(CUSTOMER_TOKEN_KEY)) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="py-8 px-4 max-w-4xl mx-auto">

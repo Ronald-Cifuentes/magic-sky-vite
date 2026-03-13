@@ -31,10 +31,11 @@ export function AdminLayout() {
           {[
             { to: '/admin/dashboard', label: 'Dashboard' },
             { to: '/admin/productos', label: 'Productos' },
+            { to: '/admin/categorias', label: 'Categorías' },
             { to: '/admin/pedidos', label: 'Pedidos' },
             { to: '/admin/cms', label: 'CMS' },
           ].map(({ to, label }) => {
-            const active = to === '/admin/productos' ? location.pathname.startsWith(to) : location.pathname === to;
+            const active = (to === '/admin/productos' || to === '/admin/categorias') ? location.pathname.startsWith(to) : location.pathname === to;
             return (
               <Link
                 key={to}

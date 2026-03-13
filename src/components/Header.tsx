@@ -1,6 +1,7 @@
+import { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 
 const navItems = [
@@ -10,11 +11,18 @@ const navItems = [
   { to: '/contacto', labelKey: 'nav.contact', end: true, cmsRoute: true },
 ];
 
-interface HeaderProps {
-  publishedRoutes: Set<string>;
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
 }
 
-export function Header({ publishedRoutes }: HeaderProps) {
+interface HeaderProps {
+  publishedRoutes: Set<string>;
+  categories?: Category[];
+}
+
+export function Header({ publishedRoutes, categories = [] }: HeaderProps) {
   const { t } = useTranslation();
   const { cartCount } = useCart();
   const [darkMode, setDarkMode] = useState(() => {
@@ -22,6 +30,17 @@ export function Header({ publishedRoutes }: HeaderProps) {
     return document.documentElement.classList.contains('dark');
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const catButtonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    if (categoriesOpen && catButtonRef.current) {
+      setDropdownRect(catButtonRef.current.getBoundingClientRect());
+    } else {
+      setDropdownRect(null);
+    }
+  }, [categoriesOpen]);
 
   const toggleDark = () => {
     document.documentElement.classList.toggle('dark');
@@ -63,9 +82,59 @@ export function Header({ publishedRoutes }: HeaderProps) {
                 {t(item.labelKey)}
               </NavLink>
             ))}
+            {publishedRoutes.has('/catalogo') && (
+              <div className="relative">
+                <button
+                  ref={catButtonRef}
+                  type="button"
+                  onClick={() => setCategoriesOpen((v) => !v)}
+                  className="px-3 py-2 rounded-lg font-semibold text-secondary hover:bg-border-soft hover:text-primary"
+                  style={{ color: '#7c2859' }}
+                  aria-expanded={categoriesOpen}
+                  aria-haspopup="true"
+                >
+                  Catálogos ⌵
+                </button>
+                {categoriesOpen && dropdownRect && createPortal(
+                  <>
+                    <div className="fixed inset-0 z-[100]" onClick={() => setCategoriesOpen(false)} aria-hidden="true" />
+                    <div
+                      className="fixed py-2 bg-white rounded-xl shadow-lg border border-border-soft min-w-[180px] z-[101]"
+                      style={{ top: dropdownRect.bottom + 4, left: dropdownRect.left }}
+                    >
+                      <Link
+                        to="/catalogo"
+                        onClick={() => setCategoriesOpen(false)}
+                        className="block px-4 py-2 text-secondary hover:bg-background-soft font-medium"
+                      >
+                        Todos
+                      </Link>
+                      {categories.map((c) => (
+                        <Link
+                          key={c.id}
+                          to={`/catalogo?categoria=${c.slug}`}
+                          onClick={() => setCategoriesOpen(false)}
+                          className="block px-4 py-2 text-secondary hover:bg-background-soft font-medium"
+                        >
+                          {c.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </>,
+                  document.body
+                )}
+              </div>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
+            <Link
+              to="/buscar"
+              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
+              aria-label="Buscar"
+            >
+              🔍
+            </Link>
             <button
               onClick={toggleDark}
               className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
@@ -74,7 +143,7 @@ export function Header({ publishedRoutes }: HeaderProps) {
               {darkMode ? '☀️' : '🌙'}
             </button>
             <Link
-              to="/login"
+              to={typeof window !== 'undefined' && localStorage.getItem('customerToken') ? '/cuenta' : '/login'}
               className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
               aria-label={t('nav.account')}
             >
@@ -103,6 +172,13 @@ export function Header({ publishedRoutes }: HeaderProps) {
 
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border-soft">
+            <Link
+              to="/buscar"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 rounded-lg font-semibold text-secondary mb-2"
+            >
+              🔍 Buscar
+            </Link>
             <div className="flex flex-col gap-1">
               {navItems
                 .filter((item) => !item.cmsRoute || publishedRoutes.has(item.to))
@@ -120,6 +196,28 @@ export function Header({ publishedRoutes }: HeaderProps) {
                   {t(item.labelKey)}
                 </NavLink>
               ))}
+              {publishedRoutes.has('/catalogo') && (
+                <div className="border-t border-border-soft pt-2 mt-2">
+                  <p className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Categorías</p>
+                  <Link
+                    to="/catalogo"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 rounded-lg font-semibold text-secondary"
+                  >
+                    Todos
+                  </Link>
+                  {categories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/catalogo?categoria=${c.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 rounded-lg font-semibold text-secondary"
+                    >
+                      {c.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </nav>
         )}

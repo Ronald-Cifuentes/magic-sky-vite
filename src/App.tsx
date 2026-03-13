@@ -9,6 +9,8 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AccountPage } from './pages/AccountPage';
+import { AccountOrdersPage } from './pages/AccountOrdersPage';
+import { AccountDataPage } from './pages/AccountDataPage';
 import { CmsPage } from './pages/CmsPage';
 import { CmsRouteWrapper } from './pages/CmsRouteWrapper';
 import { ContactPage } from './pages/ContactPage';
@@ -20,6 +22,7 @@ import { AdminProductos } from './admin/AdminProductos';
 import { AdminProductoForm } from './admin/AdminProductoForm';
 import { AdminPedidos } from './admin/AdminPedidos';
 import { AdminCms } from './admin/AdminCms';
+import { AdminCategorias } from './admin/AdminCategorias';
 import { AdminCmsEditor } from './admin/cms-builder/AdminCmsEditor';
 import { AdminCmsPreview } from './admin/AdminCmsPreview';
 
@@ -36,7 +39,11 @@ export default function App() {
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />
-        <Route path="cuenta" element={<AccountPage />} />
+        <Route path="cuenta">
+          <Route index element={<AccountPage />} />
+          <Route path="pedidos" element={<AccountOrdersPage />} />
+          <Route path="datos" element={<AccountDataPage />} />
+        </Route>
         <Route path="nosotros" element={<CmsRouteWrapper routePath="/nosotros" fallback={<CmsPage slug="nosotros" />} />} />
         <Route path="preguntas-frecuentes" element={<CmsRouteWrapper routePath="/preguntas-frecuentes" fallback={<CmsPage slug="preguntas-frecuentes" />} />} />
         <Route path="politicas" element={<CmsRouteWrapper routePath="/politicas" fallback={<CmsPage slug="politicas" />} />} />
@@ -50,6 +57,7 @@ export default function App() {
         <Route path="login" element={<AdminLogin />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="productos" element={<AdminProductos />} />
+        <Route path="categorias" element={<AdminCategorias />} />
         <Route path="productos/nuevo" element={<AdminProductoForm />} />
         <Route path="productos/:id/editar" element={<AdminProductoForm />} />
         <Route path="pedidos" element={<AdminPedidos />} />

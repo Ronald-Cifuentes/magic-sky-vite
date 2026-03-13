@@ -6,7 +6,8 @@ const ADMIN_PRODUCT = `
   query AdminProductById($id: String!) {
     adminProductById(id: $id) {
       id slug title descriptionHtml shortDescription published status
-      vendorId categoryId
+      vendor { id }
+      category { id }
       variants { id title price compareAtPrice sku }
       images { id url altText position }
     }
@@ -80,8 +81,8 @@ export function AdminProductoForm() {
           slug: p.slug ?? '',
           descriptionHtml: p.descriptionHtml ?? '',
           shortDescription: p.shortDescription ?? '',
-          vendorId: p.vendorId ?? '',
-          categoryId: p.categoryId ?? '',
+          vendorId: p.vendor?.id ?? '',
+          categoryId: p.category?.id ?? '',
           published: p.published ?? false,
           status: p.status ?? 'draft',
           variants: (p.variants?.length ? p.variants : [{ id: '', title: 'Default Title', price: 0, compareAtPrice: null, sku: '' }]).map((v: any) => ({

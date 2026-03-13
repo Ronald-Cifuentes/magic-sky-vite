@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client/core';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -11,8 +11,9 @@ import { ProductCard } from '../../components/ProductCard';
 import { useCart } from '../../context/CartContext';
 
 const HERO = gql`query HeroContent { heroContent { id title subtitle imageUrl linkUrl } }`;
-const FEATURED = gql`query FeaturedProducts($limit: Float) { featuredProducts(limit: $limit) { id slug title variants { id price compareAtPrice } images { id url position } } }`;
+const FEATURED = gql`query FeaturedProducts($limit: Float, $categorySlug: String) { featuredProducts(limit: $limit, categorySlug: $categorySlug) { id slug title variants { id price compareAtPrice } images { id url position } } }`;
 const COLLECTIONS = gql`query Collections { collections { id name slug imageUrl } }`;
+const CATEGORIES = gql`query Categories { categories { id name slug } }`;
 const ANNOUNCEMENT = gql`query AnnouncementBar { announcementBar { id text linkUrl } }`;
 
 function formatPrice(cents: number) {
@@ -107,23 +108,66 @@ export function FeaturedProductsRender({ limit = 12 }: { limit?: number }) {
 }
 
 export function ProductGridRender({ title = 'Catálogo' }: { title?: string }) {
-  const { data: featured } = useQuery(FEATURED, { variables: { limit: 48 } as any, errorPolicy: 'ignore' });
+  const [searchParams] = useSearchParams();
+  const categorySlug = searchParams.get('categoria') || '';
+  const { data: featured } = useQuery(FEATURED, {
+    variables: { limit: 48, categorySlug: categorySlug || null },
+    errorPolicy: 'ignore',
+  });
+  const { data: catData } = useQuery(CATEGORIES, { errorPolicy: 'ignore' });
   const products = featured?.featuredProducts ?? [];
+  const categories = catData?.categories ?? [];
+
   return (
     <div className="py-8 px-4 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-secondary mb-6">{title}</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((p: any) => (
-          <ProductCard
-            key={p.id}
-            slug={p.slug}
-            title={p.title}
-            price={p.variants?.[0]?.price ?? 0}
-            compareAtPrice={p.variants?.[0]?.compareAtPrice}
-            imageUrl={p.images?.[0]?.url}
-            variantId={p.variants?.[0]?.id}
-          />
-        ))}
+      <div className="flex flex-col md:flex-row md:gap-6">
+        {categories.length > 0 && (
+          <aside className="md:w-56 shrink-0 mb-4 md:mb-0">
+            <div className="p-4 rounded-xl border border-border-soft bg-background-soft">
+              <p className="font-bold text-secondary mb-3">Categorías</p>
+              <div className="flex flex-wrap gap-2 md:flex-col md:gap-1">
+                <Link
+                  to="/catalogo"
+                  className={`inline-block px-3 py-2 rounded-lg text-sm font-medium ${
+                    !categorySlug ? 'bg-primary text-white' : 'text-secondary hover:bg-border-soft'
+                  }`}
+                >
+                  Todas
+                </Link>
+                {categories.map((c: { id: string; name: string; slug: string }) => (
+                  <Link
+                    key={c.id}
+                    to={`/catalogo?categoria=${c.slug}`}
+                    className={`inline-block px-3 py-2 rounded-lg text-sm font-medium ${
+                      c.slug === categorySlug ? 'bg-primary text-white' : 'text-secondary hover:bg-border-soft'
+                    }`}
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </aside>
+        )}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold text-secondary mb-6">{title}</h1>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {products.map((p: any) => (
+              <ProductCard
+                key={p.id}
+                slug={p.slug}
+                title={p.title}
+                price={p.variants?.[0]?.price ?? 0}
+                compareAtPrice={p.variants?.[0]?.compareAtPrice}
+                imageUrl={p.images?.[0]?.url}
+                variantId={p.variants?.[0]?.id}
+              />
+            ))}
+          </div>
+          {products.length === 0 && (
+            <p className="text-center text-gray-500 py-12">No hay productos en esta categoría.</p>
+          )}
+        </div>
       </div>
     </div>
   );

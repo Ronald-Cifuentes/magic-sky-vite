@@ -1,4 +1,5 @@
 import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
@@ -11,6 +12,16 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
   return forward(operation);
 });
 
+const authLink = setContext((_, { headers }) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('customerToken') : null;
+  return {
+    headers: {
+      ...headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  };
+});
+
 // En Docker, usar URL directa (el navegador está en el host). Localmente, usar proxy /graphql.
 const graphqlUri = import.meta.env.VITE_GRAPHQL_URI || '/graphql';
 
@@ -20,7 +31,7 @@ const httpLink = createHttpLink({
 });
 
 export const client = new ApolloClient({
-  link: from([errorLink, httpLink]),
+  link: from([authLink, errorLink, httpLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
