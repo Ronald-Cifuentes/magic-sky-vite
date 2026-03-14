@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiEdit2, FiExternalLink, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiExternalLink, FiStar, FiTrash2 } from 'react-icons/fi';
 import { adminFetch } from './adminApi';
 
 const ADMIN_PRODUCTS = `
@@ -10,9 +10,18 @@ const ADMIN_PRODUCTS = `
       slug
       title
       published
+      featured
       status
       variants { id price title }
       images { id url }
+    }
+  }
+`;
+
+const SET_FEATURED_MUTATION = `
+  mutation AdminSetProductFeatured($id: String!, $featured: Boolean!) {
+    adminSetProductFeatured(id: $id, featured: $featured) {
+      id featured
     }
   }
 `;
@@ -47,6 +56,15 @@ export function AdminProductos() {
       loadProducts();
     } catch (e: any) {
       alert(e.message || 'Error al eliminar');
+    }
+  };
+
+  const handleToggleFeatured = async (p: any) => {
+    try {
+      await adminFetch(SET_FEATURED_MUTATION, { id: p.id, featured: !p.featured });
+      loadProducts();
+    } catch (e: any) {
+      alert(e.message || 'Error al actualizar');
     }
   };
 
@@ -103,7 +121,15 @@ export function AdminProductos() {
                   ${((p.variants?.[0]?.price ?? 0) / 100).toLocaleString()}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 items-center">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(p)}
+                      title={p.featured ? 'Quitar de destacados' : 'Marcar como destacado'}
+                      className={`p-1.5 rounded transition-colors ${p.featured ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50' : 'text-gray-400 hover:text-amber-500 hover:bg-amber-50'}`}
+                    >
+                      <FiStar size={18} fill={p.featured ? 'currentColor' : 'none'} />
+                    </button>
                     <Link
                       to={`/admin/productos/${p.id}/editar`}
                       title="Editar"

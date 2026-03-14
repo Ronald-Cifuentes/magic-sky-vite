@@ -5,7 +5,7 @@ import { adminFetch } from './adminApi';
 const ADMIN_PRODUCT = `
   query AdminProductById($id: String!) {
     adminProductById(id: $id) {
-      id slug title descriptionHtml shortDescription published status
+      id slug title descriptionHtml shortDescription published featured status
       vendor { id }
       category { id }
       variants { id title price compareAtPrice sku }
@@ -50,6 +50,7 @@ export function AdminProductoForm() {
     vendorId: '',
     categoryId: '',
     published: false,
+    featured: false,
     status: 'draft',
     variants: [{ title: 'Default Title', price: 0, compareAtPrice: '', sku: '' }],
     images: [{ url: '', altText: '', position: 0 }],
@@ -84,6 +85,7 @@ export function AdminProductoForm() {
           vendorId: p.vendor?.id ?? '',
           categoryId: p.category?.id ?? '',
           published: p.published ?? false,
+          featured: p.featured ?? false,
           status: p.status ?? 'draft',
           variants: (p.variants?.length ? p.variants : [{ id: '', title: 'Default Title', price: 0, compareAtPrice: null, sku: '' }]).map((v: any) => ({
             id: v.id,
@@ -146,6 +148,7 @@ export function AdminProductoForm() {
         vendorId: form.vendorId || undefined,
         categoryId: form.categoryId || undefined,
         published: form.published,
+        featured: form.featured,
         status: form.status,
         variants: form.variants.map((v) => ({
           title: v.title || 'Default Title',
@@ -247,10 +250,14 @@ export function AdminProductoForm() {
             </select>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap items-center">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
             Publicado
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
+            Destacado
           </label>
           <select
             value={form.status}
