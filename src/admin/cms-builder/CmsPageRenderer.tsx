@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
+import { useAnnouncement } from '../../context/AnnouncementContext';
 import { gql } from '@apollo/client/core';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -279,13 +280,45 @@ export function CollectionsGridRender({ title = 'Colecciones' }: { title?: strin
   );
 }
 
-export function AnnouncementBarRender() {
+interface AnnouncementMessage {
+  text: string;
+  linkUrl?: string;
+}
+
+export function AnnouncementBarRender({ messages: cmsMessages }: { messages?: AnnouncementMessage[] }) {
   const { data } = useQuery(ANNOUNCEMENT, { errorPolicy: 'ignore' });
   const bar = data?.announcementBar;
-  if (!bar) return null;
+
+  const hasCmsMessages = Array.isArray(cmsMessages) && cmsMessages.length > 0 && cmsMessages.some((m) => (m.text ?? '').trim());
+  const items: AnnouncementMessage[] = hasCmsMessages
+    ? cmsMessages!.filter((m) => (m.text ?? '').trim())
+    : bar ? [{ text: bar.text, linkUrl: bar.linkUrl ?? undefined }] : [];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [items.length]);
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const id = setInterval(() => setCurrentIndex((i) => (i + 1) % items.length), 4000);
+    return () => clearInterval(id);
+  }, [items.length]);
+
+  if (items.length === 0) return null;
+
+  const current = items[currentIndex % items.length];
+  const barClass = 'py-2 px-4 text-center text-white text-sm font-medium tracking-wider uppercase';
+  const barStyle = { background: 'linear-gradient(90deg, #ff7bb6, #ff4f9c)' };
+
   return (
-    <div className="bg-primary/10 text-primary text-center py-2 px-4 text-sm">
-      {bar.linkUrl ? <Link to={bar.linkUrl}>{bar.text}</Link> : bar.text}
+    <div className={barClass} style={barStyle}>
+      {current.linkUrl ? (
+        <a href={current.linkUrl} className="hover:underline">
+          {current.text}
+        </a>
+      ) : (
+        <span>{current.text}</span>
+      )}
     </div>
   );
 }
@@ -305,10 +338,14 @@ interface CmsPageRendererProps {
 }
 
 export function CmsPageRenderer({ layout }: CmsPageRendererProps) {
+  const announcement = useAnnouncement();
   const root = layout?.root ?? [];
+  const filteredRoot = announcement?.override
+    ? root.filter((node) => node.type !== 'AnnouncementBar')
+    : root;
   return (
     <div>
-      {root.map((node) => {
+      {filteredRoot.map((node: { id: string; type: string; props?: Record<string, unknown>; zone?: string }) => {
         const Comp = COMPONENT_MAP[node.type];
         if (!Comp) return null;
         const baseProps = node.props || {};

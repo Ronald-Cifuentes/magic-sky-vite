@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { CmsPageRenderer } from '../admin/cms-builder/CmsPageRenderer';
 import { NotFoundPage } from './NotFoundPage';
 import { CMS_BY_ROUTE } from '../graphql/cms-queries';
+import { useAnnouncement } from '../context/AnnouncementContext';
 
 const PAGE_SUBTITLES: Record<string, string> = {
   '/nosotros': 'Conoce nuestra historia y pasión por la belleza.',
@@ -20,6 +21,7 @@ interface CmsRouteWrapperProps {
 }
 
 export function CmsRouteWrapper({ routePath, fallback }: CmsRouteWrapperProps) {
+  const announcement = useAnnouncement();
   const { data, loading, refetch } = useQuery(CMS_BY_ROUTE, {
     variables: { routePath },
     errorPolicy: 'ignore',
@@ -36,6 +38,19 @@ export function CmsRouteWrapper({ routePath, fallback }: CmsRouteWrapperProps) {
 
   const page = data?.cmsPageByRoute;
   const layout = page?.layoutJson ? (typeof page.layoutJson === 'string' ? JSON.parse(page.layoutJson) : page.layoutJson) : null;
+
+  useEffect(() => {
+    if (!announcement) return;
+    const root = layout?.root ?? [];
+    const annNode = root.find((n: { type: string }) => n.type === 'AnnouncementBar');
+    const messages = annNode?.props?.messages;
+    if (Array.isArray(messages) && messages.length > 0 && messages.some((m: { text?: string }) => (m?.text ?? '').trim())) {
+      announcement.setOverride(messages.filter((m: { text?: string }) => (m?.text ?? '').trim()));
+    } else {
+      announcement.setOverride(null);
+    }
+    return () => announcement.setOverride(null);
+  }, [announcement, layout?.root]);
 
   if (import.meta.env.DEV) {
     if (!page) console.debug('[CmsRouteWrapper] No CMS page for', routePath, '- using fallback');

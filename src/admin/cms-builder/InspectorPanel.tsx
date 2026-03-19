@@ -10,6 +10,72 @@ export interface HeroSlide {
   linkUrl?: string;
 }
 
+export interface AnnouncementMessage {
+  text: string;
+  linkUrl?: string;
+}
+
+function MessagesEditor({
+  value,
+  onChange,
+}: {
+  value: AnnouncementMessage[];
+  onChange: (v: AnnouncementMessage[]) => void;
+}) {
+  const messages = Array.isArray(value) ? value : [];
+
+  const updateMessage = (index: number, field: keyof AnnouncementMessage, val: string) => {
+    const next = [...messages];
+    if (!next[index]) next[index] = { text: '' };
+    next[index] = { ...next[index], [field]: val };
+    onChange(next);
+  };
+
+  const addMessage = () => {
+    onChange([...messages, { text: '', linkUrl: '' }]);
+  };
+
+  const removeMessage = (index: number) => {
+    onChange(messages.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-3">
+      {messages.map((msg, i) => (
+        <div key={i} className="p-3 border rounded-lg bg-gray-50 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-gray-600">Mensaje {i + 1}</span>
+            <button type="button" onClick={() => removeMessage(i)} className="text-red-600 hover:bg-red-50 p-1 rounded">
+              <FiTrash2 size={14} />
+            </button>
+          </div>
+          <input
+            type="text"
+            className="w-full px-2 py-1.5 border rounded text-sm"
+            placeholder="Texto del mensaje"
+            value={msg.text ?? ''}
+            onChange={(e) => updateMessage(i, 'text', e.target.value)}
+          />
+          <input
+            type="text"
+            className="w-full px-2 py-1.5 border rounded text-sm"
+            placeholder="Enlace (opcional)"
+            value={msg.linkUrl ?? ''}
+            onChange={(e) => updateMessage(i, 'linkUrl', e.target.value)}
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addMessage}
+        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary text-sm"
+      >
+        <FiPlus size={16} /> Añadir mensaje
+      </button>
+    </div>
+  );
+}
+
 interface InspectorPanelProps {
   node: LayoutNode | null;
   onPropsChange: (nodeId: string, props: Record<string, unknown>) => void;
@@ -70,6 +136,20 @@ function SlidesEditor({
             value={slide.imageUrl ?? ''}
             onChange={(e) => updateSlide(i, 'imageUrl', e.target.value)}
           />
+          <div className="mt-1">
+            {slide.imageUrl ? (
+              <img
+                src={slide.imageUrl}
+                alt="Preview"
+                className="w-16 h-16 object-cover rounded border border-gray-200"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : (
+              <div className="w-16 h-16 rounded border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs">
+                Sin imagen
+              </div>
+            )}
+          </div>
           <input
             type="text"
             className="w-full px-2 py-1.5 border rounded text-sm"
@@ -106,6 +186,15 @@ function PropInput({
     return (
       <SlidesEditor
         value={(Array.isArray(val) ? val : []) as HeroSlide[]}
+        onChange={(v) => onChange(v)}
+      />
+    );
+  }
+
+  if (type === 'messages') {
+    return (
+      <MessagesEditor
+        value={(Array.isArray(val) ? val : []) as AnnouncementMessage[]}
         onChange={(v) => onChange(v)}
       />
     );

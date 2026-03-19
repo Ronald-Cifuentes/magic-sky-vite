@@ -143,8 +143,8 @@ export function AdminProductoForm() {
       const input = {
         title: form.title.trim(),
         slug: form.slug.trim() || slugify(form.title),
-        descriptionHtml: form.descriptionHtml.trim() || undefined,
-        shortDescription: form.shortDescription.trim() || undefined,
+        descriptionHtml: form.descriptionHtml.trim() || '',
+        shortDescription: form.shortDescription.trim() || '',
         vendorId: form.vendorId || undefined,
         categoryId: form.categoryId || undefined,
         published: form.published,

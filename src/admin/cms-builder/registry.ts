@@ -1,4 +1,4 @@
-export type PropSchemaType = 'text' | 'number' | 'html' | 'url' | 'select' | 'slides';
+export type PropSchemaType = 'text' | 'number' | 'html' | 'url' | 'select' | 'slides' | 'messages';
 
 export interface PropSchema {
   key: string;
@@ -32,7 +32,7 @@ export const DEFAULT_REGISTRY: ComponentDef[] = [
   { type: 'CartContent', version: 1, label: 'Contenido del carrito', category: 'Carrito', defaultProps: {}, propSchema: [], allowedZones: ['main'], requiredData: [], requiredContext: ['cart'], canHaveChildren: false, childZones: [] },
   { type: 'HtmlContent', version: 1, label: 'Contenido HTML', category: 'Contenido', defaultProps: { html: '' }, propSchema: [{ key: 'html', label: 'Contenido HTML', type: 'html', placeholder: '<p>Tu contenido...</p>' }], allowedZones: ['main'], requiredData: [], requiredContext: [], canHaveChildren: false, childZones: [] },
   { type: 'CollectionsGrid', version: 1, label: 'Grid de colecciones', category: 'Catálogo', defaultProps: {}, propSchema: [{ key: 'title', label: 'Título', type: 'text', placeholder: 'Colecciones' }], allowedZones: ['main'], requiredData: ['collections'], requiredContext: [], canHaveChildren: false, childZones: [] },
-  { type: 'AnnouncementBar', version: 1, label: 'Barra de anuncios', category: 'Marketing', defaultProps: {}, propSchema: [], allowedZones: ['main', 'header'], requiredData: ['announcementBar'], requiredContext: [], canHaveChildren: false, childZones: [] },
+  { type: 'AnnouncementBar', version: 1, label: 'Barra de anuncios', category: 'Marketing', defaultProps: { messages: [{ text: 'EL NÚMERO DE GUÍA SE ENVÍA POR WHATSAPP O CORREO.', linkUrl: '' }] }, propSchema: [{ key: 'messages', label: 'Mensajes', type: 'messages' }], allowedZones: ['main', 'header'], requiredData: ['announcementBar'], requiredContext: [], canHaveChildren: false, childZones: [] },
 ];
 
 export function getDef(type: string): ComponentDef | undefined {

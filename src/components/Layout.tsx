@@ -7,6 +7,7 @@ import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
 import { WhatsAppButton } from './WhatsAppButton';
 import { CMS_PUBLISHED_ROUTES } from '../graphql/cms-queries';
+import { AnnouncementProvider } from '../context/AnnouncementContext';
 
 const CATEGORIES = gql`
   query Categories {
@@ -21,7 +22,7 @@ const CATEGORIES = gql`
 export function Layout() {
   const { data, refetch } = useQuery(CMS_PUBLISHED_ROUTES, { fetchPolicy: 'cache-first' });
   const { data: catData } = useQuery(CATEGORIES, { fetchPolicy: 'cache-first' });
-  const publishedRoutes = new Set(data?.cmsPublishedRoutes ?? []);
+  const publishedRoutes = new Set<string>(data?.cmsPublishedRoutes ?? []);
   const categories = catData?.categories ?? [];
 
   useEffect(() => {
@@ -33,14 +34,16 @@ export function Layout() {
   }, [refetch]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
-      <Header publishedRoutes={publishedRoutes} categories={categories} />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <Footer publishedRoutes={publishedRoutes} />
-      <WhatsAppButton />
-    </div>
+    <AnnouncementProvider>
+      <div className="min-h-screen flex flex-col">
+        <AnnouncementBar />
+        <Header publishedRoutes={publishedRoutes} categories={categories} />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer publishedRoutes={publishedRoutes} />
+        <WhatsAppButton />
+      </div>
+    </AnnouncementProvider>
   );
 }

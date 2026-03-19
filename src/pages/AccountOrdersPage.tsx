@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '@apollo/client/core';
 import { Navigate } from 'react-router-dom';
 
@@ -25,6 +25,15 @@ const LIST_MY_ORDERS = gql`
   }
 `;
 
+const CANCEL_ORDER = gql`
+  mutation CancelOrder($orderId: String!) {
+    cancelOrder(orderId: $orderId) {
+      id
+      status
+    }
+  }
+`;
+
 const CUSTOMER_TOKEN_KEY = 'customerToken';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -37,15 +46,68 @@ const STATUS_LABELS: Record<string, string> = {
   REFUNDED: 'Reembolsado',
 };
 
+const CANCELABLE_STATUSES = ['PENDING'];
+
 export function AccountOrdersPage() {
+  const navigate = useNavigate();
   const { data, loading, error } = useQuery(LIST_MY_ORDERS);
+  const [cancelOrder, { loading: cancelling }] = useMutation(CANCEL_ORDER, {
+    refetchQueries: [{ query: LIST_MY_ORDERS }],
+  });
 
   if (!localStorage.getItem(CUSTOMER_TOKEN_KEY)) {
     return <Navigate to="/login" replace />;
   }
 
+  const errMsg = (error?.graphQLErrors?.[0]?.message ?? error?.message ?? '').toLowerCase();
+  const isAuthError =
+    error?.graphQLErrors?.some(
+      (e) =>
+        e?.extensions?.code === 'UNAUTHENTICATED' ||
+        e?.message?.toLowerCase().includes('unauthorized') ||
+        e?.message?.toLowerCase().includes('jwt')
+    ) ||
+    errMsg.includes('unauthorized') ||
+    errMsg.includes('jwt') ||
+    errMsg.includes('token');
+
   if (loading) return <div className="py-8 px-4 text-center">Cargando pedidos...</div>;
-  if (error) return <div className="py-8 px-4 text-red-600">Error al cargar pedidos. Inicia sesión de nuevo.</div>;
+  if (error) {
+    return (
+      <div className="py-8 px-4 max-w-4xl mx-auto">
+        <div className="p-6 rounded-xl bg-red-50 border border-red-200 text-red-700">
+          <p className="font-semibold mb-2">Error al cargar pedidos.</p>
+          <p className="text-sm mb-4">
+            {isAuthError
+              ? 'Tu sesión ha expirado o no es válida. Inicia sesión de nuevo.'
+              : error?.graphQLErrors?.[0]?.message || error?.message || 'Intenta de nuevo más tarde.'}
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (isAuthError) {
+                  localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+                  navigate('/login');
+                } else {
+                  window.location.reload();
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700"
+            >
+              {isAuthError ? 'Iniciar sesión' : 'Reintentar'}
+            </button>
+            <Link
+              to="/cuenta"
+              className="px-4 py-2 rounded-lg border border-red-300 text-red-700 font-semibold hover:bg-red-100"
+            >
+              Volver a cuenta
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const orders = data?.listMyOrders ?? [];
 
@@ -85,9 +147,26 @@ export function AccountOrdersPage() {
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
               </div>
-              <p className="text-sm text-secondary">
+              <p className="text-sm text-secondary mb-3">
                 {order.items?.length ?? 0} producto(s) · Total: {order.currency} ${order.total?.toFixed(2) ?? '0'}
               </p>
+              {CANCELABLE_STATUSES.includes(order.status) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (cancelling) return;
+                    try {
+                      await cancelOrder({ variables: { orderId: order.id } });
+                    } catch (e) {
+                      alert((e as Error)?.message ?? 'Error al cancelar');
+                    }
+                  }}
+                  disabled={cancelling}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-red-300 text-red-700 hover:bg-red-50 font-medium disabled:opacity-50"
+                >
+                  Cancelar pedido
+                </button>
+              )}
             </div>
           ))}
         </div>

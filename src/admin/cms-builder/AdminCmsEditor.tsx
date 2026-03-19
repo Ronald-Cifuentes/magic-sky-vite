@@ -81,6 +81,25 @@ function SortableNode({
       {def?.propSchema && def.propSchema.length > 0 && (
         <p className="mt-1 text-xs text-gray-500">Haz clic para editar en el panel derecho</p>
       )}
+      {node.type === 'HeroSection' && (() => {
+        const slides = node.props?.slides;
+        if (!Array.isArray(slides)) return null;
+        const withUrls = (slides as { imageUrl?: string }[]).filter((s): s is { imageUrl: string } => Boolean(s?.imageUrl)).slice(0, 3);
+        if (withUrls.length === 0) return null;
+        return (
+          <div className="mt-2 flex gap-1 flex-wrap">
+            {withUrls.map((s, i) => (
+              <img
+                key={`slide-${i}-${s.imageUrl}`}
+                src={s.imageUrl}
+                alt=""
+                className="w-10 h-10 object-cover rounded border border-gray-200"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

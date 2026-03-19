@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useCheckoutFlow } from '../hooks/useCheckoutFlow';
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('es-CO', {
@@ -13,9 +14,11 @@ function formatPrice(cents: number) {
 
 export function CartPage() {
   const { t } = useTranslation();
-  const { cartItems, cartCount, removeFromCart, updateQuantity } = useCart();
+  const { cartId, cartItems, cartCount, removeFromCart, updateQuantity } = useCart();
+  const { handleFinalizarCompra } = useCheckoutFlow(cartId);
   const [removing, setRemoving] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   if (cartCount === 0) {
     return (
@@ -245,16 +248,25 @@ export function CartPage() {
                 >
                   Seguir comprando
                 </Link>
-                <Link
-                  to="/checkout"
-                  className="btn-primary text-center py-4 rounded-xl font-extrabold text-white no-underline block"
+                <button
+                  type="button"
+                  disabled={checkoutLoading}
+                  onClick={async () => {
+                    setCheckoutLoading(true);
+                    try {
+                      await handleFinalizarCompra();
+                    } finally {
+                      setCheckoutLoading(false);
+                    }
+                  }}
+                  className="btn-primary text-center py-4 rounded-xl font-extrabold text-white block w-full border-0 cursor-pointer disabled:opacity-60"
                   style={{
                     background: '#f04793',
                     boxShadow: '0 12px 20px rgba(240, 71, 147, 0.22)',
                   }}
                 >
-                  {t('cart.checkout', 'Finalizar compra')}
-                </Link>
+                  {checkoutLoading ? 'Procesando...' : t('cart.checkout', 'Finalizar compra')}
+                </button>
               </div>
             </div>
           </div>

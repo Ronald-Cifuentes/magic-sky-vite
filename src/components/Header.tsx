@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
+
+const CUSTOMER_TOKEN_KEY = 'customerToken';
 
 const navItems = [
   { to: '/', labelKey: 'nav.home', end: true, cmsRoute: true },
@@ -24,7 +26,28 @@ interface HeaderProps {
 
 export function Header({ publishedRoutes, categories = [] }: HeaderProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { cartCount } = useCart();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem(CUSTOMER_TOKEN_KEY);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+    setUserMenuOpen(false);
+    navigate('/');
+  };
+
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return false;
     return document.documentElement.classList.contains('dark');
@@ -142,13 +165,50 @@ export function Header({ publishedRoutes, categories = [] }: HeaderProps) {
             >
               {darkMode ? '☀️' : '🌙'}
             </button>
-            <Link
-              to={typeof window !== 'undefined' && localStorage.getItem('customerToken') ? '/cuenta' : '/login'}
-              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
-              aria-label={t('nav.account')}
-            >
-              👤
-            </Link>
+            {isLoggedIn ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
+                  aria-label={t('nav.account')}
+                  aria-expanded={userMenuOpen}
+                >
+                  👤
+                </button>
+                {userMenuOpen && (
+                  <div
+                    className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-xl shadow-lg border border-border-soft z-50"
+                    style={{ minWidth: '180px' }}
+                  >
+                    <Link
+                      to="/cuenta"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-secondary hover:bg-background-soft font-medium"
+                      style={{ color: '#7c2859' }}
+                    >
+                      Mi cuenta
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-secondary hover:bg-background-soft font-medium"
+                      style={{ color: '#7c2859' }}
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-pink-sm border border-border-soft hover:shadow-pink-lg transition-shadow"
+                aria-label={t('nav.account')}
+              >
+                👤
+              </Link>
+            )}
             {publishedRoutes.has('/carrito') && (
               <Link
                 to="/carrito"
@@ -172,6 +232,26 @@ export function Header({ publishedRoutes, categories = [] }: HeaderProps) {
 
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border-soft">
+            {isLoggedIn && (
+              <>
+                <Link
+                  to="/cuenta"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg font-semibold text-secondary"
+                  style={{ color: '#7c2859' }}
+                >
+                  👤 Mi cuenta
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg font-semibold text-secondary w-full text-left"
+                  style={{ color: '#7c2859' }}
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            )}
             <Link
               to="/buscar"
               onClick={() => setMobileMenuOpen(false)}

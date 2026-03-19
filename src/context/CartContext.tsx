@@ -69,6 +69,7 @@ export type CartItem = {
 
 type CartContextValue = {
   sessionId: string;
+  cartId: string | null;
   cartCount: number;
   cartItems: CartItem[];
   addToCart: (variantId: string, quantity?: number) => Promise<void>;
@@ -100,6 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   });
 
   const cartItems = useMemo(() => data?.cart?.items ?? [], [data?.cart?.items]);
+  const cartId = data?.cart?.id ?? null;
   const cartCount = useMemo(
     () => cartItems.reduce((sum: number, it: { quantity: number }) => sum + it.quantity, 0),
     [cartItems]
@@ -145,8 +147,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value: CartContextValue = useMemo(
-    () => ({ sessionId, cartCount, cartItems, addToCart, removeFromCart, updateQuantity, loading }),
-    [sessionId, cartCount, cartItems, addToCart, removeFromCart, updateQuantity, loading]
+    () => ({ sessionId, cartId, cartCount, cartItems, addToCart, removeFromCart, updateQuantity, loading }),
+    [sessionId, cartId, cartCount, cartItems, addToCart, removeFromCart, updateQuantity, loading]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
